@@ -1,7 +1,8 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+#[derive(Clone, Default)]
+struct RistrettoHash {}
+
+impl RistrettoHash {
+    pub fn add(data: impl AsRef<u8>, multiplicity: u64) {
+        unimplemented!()
     }
 }
