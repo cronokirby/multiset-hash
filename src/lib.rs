@@ -1,9 +1,13 @@
-use digest::{FixedOutput, Reset, Update, consts::U32, generic_array::GenericArray};
+use curve25519_dalek::ristretto;
+use digest::{Digest, FixedOutput, Reset, Update, consts::{U32, U64}, generic_array::GenericArray};
 
 #[derive(Clone, Default)]
-struct RistrettoHash {}
+struct RistrettoHash<H> {
+    hash: H,
+    acc: ristretto::RistrettoPoint,
+}
 
-impl RistrettoHash {
+impl <H: Digest<OutputSize = U64> + Default> RistrettoHash<H> {
     pub fn add(data: impl AsRef<u8>, multiplicity: u64) {
         unimplemented!()
     }
@@ -13,7 +17,7 @@ impl RistrettoHash {
     }
 }
 
-impl FixedOutput for RistrettoHash {
+impl <H> FixedOutput for RistrettoHash<H> {
     type OutputSize = U32;
 
     fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>) {
@@ -25,13 +29,13 @@ impl FixedOutput for RistrettoHash {
     }
 }
 
-impl Reset for RistrettoHash {
+impl <H: Reset> Reset for RistrettoHash<H> {
     fn reset(&mut self) {
         unimplemented!()
     }
 }
 
-impl Update for RistrettoHash {
+impl <H: Update> Update for RistrettoHash<H> {
     fn update(&mut self, data: impl AsRef<[u8]>) {
         unimplemented!()
     }
