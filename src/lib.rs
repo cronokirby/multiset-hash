@@ -1,42 +1,59 @@
-use curve25519_dalek::ristretto;
-use digest::{Digest, FixedOutput, Reset, Update, consts::{U32, U64}, generic_array::GenericArray};
+use curve25519_dalek::{ristretto::RistrettoPoint, scalar::Scalar};
+use digest::{
+    consts::{U32, U64},
+    generic_array::GenericArray,
+    Digest, FixedOutput, Reset, Update,
+};
 
 #[derive(Clone, Default)]
 struct RistrettoHash<H> {
     hash: H,
-    acc: ristretto::RistrettoPoint,
+    updating: bool,
+    acc: RistrettoPoint,
 }
 
-impl <H: Digest<OutputSize = U64> + Default> RistrettoHash<H> {
-    pub fn add(data: impl AsRef<u8>, multiplicity: u64) {
-        unimplemented!()
+impl<H: Digest<OutputSize = U64> + Default> RistrettoHash<H> {
+    pub fn add(&mut self, data: impl AsRef<[u8]>, multiplicity: u64) {
+        if self.updating {
+            panic!("add called before end_update");
+        }
+        self.hash.update(data);
+        self.end_update(multiplicity);
     }
 
-    pub fn end_update(multiplicity: u64) {
-        unimplemented!()
+    pub fn end_update(&mut self, multiplicity: u64) {
+        self.updating = false;
+
+        let old = std::mem::replace(&mut self.hash, H::default());
+        let h_point = RistrettoPoint::from_hash(old);
+        self.acc += Scalar::from(multiplicity) * h_point;
     }
 }
 
-impl <H> FixedOutput for RistrettoHash<H> {
+impl<H: Reset> FixedOutput for RistrettoHash<H> {
     type OutputSize = U32;
 
     fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        unimplemented!()
+        out.copy_from_slice(&self.acc.compress().as_bytes()[..]);
     }
 
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
-        unimplemented!()
+        out.copy_from_slice(&self.acc.compress().as_bytes()[..]);
+        self.reset();
     }
 }
 
-impl <H: Reset> Reset for RistrettoHash<H> {
+impl<H: Reset> Reset for RistrettoHash<H> {
     fn reset(&mut self) {
-        unimplemented!()
+        self.hash.reset();
+        self.updating = false;
+        self.acc = RistrettoPoint::default();
     }
 }
 
-impl <H: Update> Update for RistrettoHash<H> {
+impl<H: Update> Update for RistrettoHash<H> {
     fn update(&mut self, data: impl AsRef<[u8]>) {
-        unimplemented!()
+        self.updating = true;
+        self.hash.update(data);
     }
 }
