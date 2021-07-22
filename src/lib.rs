@@ -6,7 +6,7 @@ use digest::{
 };
 
 #[derive(Clone, Default)]
-struct RistrettoHash<H> {
+pub struct RistrettoHash<H> {
     hash: H,
     updating: bool,
     acc: RistrettoPoint,
