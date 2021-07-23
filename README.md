@@ -43,8 +43,6 @@ This is equivalent to hashing the same number of objects, with a different
 grouping and order:
 
 ```rust
-# use multiset_hash::RistrettoHash;
-# use sha2::Sha512;
 use digest::Digest;
 
 let mut hash = RistrettoHash::<Sha512>::default();
@@ -57,8 +55,6 @@ hash.add(b"dog", 1);
 You can also hash objects in multiple pieces using the `update` method:
 
 ```rust
-# use multiset_hash::RistrettoHash;
-# use sha2::Sha512;
 use digest::Digest;
 
 let mut hash = RistrettoHash::<Sha512>::default();
