@@ -5,6 +5,65 @@ use digest::{
     Digest, FixedOutput, Reset, Update,
 };
 
+/// RistrettoHash represents a hash function for multi-sets.
+///
+/// A multi-set is a collection of objects, where any given object may appear
+/// multiple times. This hash function will accept the objects in different
+/// orders, and with different groupings, but always return the same result
+/// for the same multi-set.
+///
+/// This allows incrementally calculating such a multi-set hash without keeping
+/// the entire set in memory.
+///
+/// This struct is parameterized by a hash function with 512 bits of output.
+/// For example, SHA-512.
+///
+/// This is called `RistrettoHash`, because this function internally uses
+/// the Ristretto group to implement its commutative hashing.
+///
+/// # Examples
+///
+/// In the usual case, you add in different byte slices, with multiplicity For example,
+/// to hash the set `{cat, cat, dog, dog}`, you could do:
+///
+/// ```
+/// # use multiset_hash::RistrettoHash;
+/// use digest::Digest;
+/// use sha2::Sha512;
+///
+/// let mut hash = RistrettoHash::<Sha512>::default();
+/// hash.add(b"cat", 2);
+/// hash.add(b"dog", 2);
+/// ```
+///
+/// This is equivalent to hashing the same number of objects, with a different
+/// grouping and order:
+///
+/// ```
+/// # use multiset_hash::RistrettoHash;
+/// # use sha2::Sha512;
+/// use digest::Digest;
+///
+/// let mut hash = RistrettoHash::<Sha512>::default();
+/// hash.add(b"dog", 1);
+/// hash.add(b"cat", 1);
+/// hash.add(b"cat", 1);
+/// hash.add(b"dog", 1);
+/// ```
+///
+/// You can also hash objects in multiple pieces using the `update` method:
+///
+/// ```
+/// # use multiset_hash::RistrettoHash;
+/// # use sha2::Sha512;
+/// use digest::Digest;
+///
+/// let mut hash = RistrettoHash::<Sha512>::default();
+/// hash.update(b"d");
+/// hash.update(b"og");
+/// hash.end_update(2);
+/// hash.add(b"cat", 2);
+/// ```
 #[derive(Clone, Default)]
 pub struct RistrettoHash<H> {
     hash: H,
