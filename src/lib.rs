@@ -67,6 +67,7 @@ mod test {
     #[test]
     fn test_add_with_multiplicity() {
         let data = b"test data";
+
         let mut hash1 = RistrettoHash::<Sha512>::default();
         let mut hash2 = hash1.clone();
 
@@ -74,6 +75,25 @@ mod test {
         hash2.add(data, 1);
         hash2.add(data, 1);
         hash2.add(data, 1);
+
+        let output1 = hash1.finalize();
+        let output2 = hash2.finalize();
+        assert_eq!(output1, output2)
+    }
+
+    #[test]
+    fn test_hash_commutative() {
+        let data_a = b"test data A";
+        let data_b = b"test data B";
+
+        let mut hash1 = RistrettoHash::<Sha512>::default();
+        let mut hash2 = hash1.clone();
+
+        hash1.add(data_a, 1);
+        hash1.add(data_b, 1);
+
+        hash2.add(data_b, 1);
+        hash2.add(data_a, 1);
 
         let output1 = hash1.finalize();
         let output2 = hash2.finalize();
