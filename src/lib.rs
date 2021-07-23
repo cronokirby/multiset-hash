@@ -57,3 +57,26 @@ impl<H: Update> Update for RistrettoHash<H> {
         self.hash.update(data);
     }
 }
+
+#[cfg(test)]
+mod test {
+    use sha2::Sha512;
+
+    use super::*;
+
+    #[test]
+    fn test_add_with_multiplicity() {
+        let data = b"test data";
+        let mut hash1 = RistrettoHash::<Sha512>::default();
+        let mut hash2 = hash1.clone();
+
+        hash1.add(data, 3);
+        hash2.add(data, 1);
+        hash2.add(data, 1);
+        hash2.add(data, 1);
+
+        let output1 = hash1.finalize();
+        let output2 = hash2.finalize();
+        assert_eq!(output1, output2)
+    }
+}
