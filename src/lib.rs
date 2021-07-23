@@ -116,4 +116,12 @@ mod test {
         let output2 = hash2.finalize();
         assert_eq!(output1, output2)
     }
+
+    #[test]
+    #[should_panic]
+    fn test_add_before_end_update_panics() {
+        let mut hash = RistrettoHash::<Sha512>::default();
+        hash.update("some data");
+        hash.add("more data", 1);
+    }
 }
