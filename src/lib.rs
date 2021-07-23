@@ -34,10 +34,16 @@ impl<H: Reset> FixedOutput for RistrettoHash<H> {
     type OutputSize = U32;
 
     fn finalize_into(self, out: &mut GenericArray<u8, Self::OutputSize>) {
+        if self.updating {
+            panic!("end_update not called before finalizing");
+        }
         out.copy_from_slice(&self.acc.compress().as_bytes()[..]);
     }
 
     fn finalize_into_reset(&mut self, out: &mut GenericArray<u8, Self::OutputSize>) {
+        if self.updating {
+            panic!("end_update not called before finalizing");
+        }
         out.copy_from_slice(&self.acc.compress().as_bytes()[..]);
         self.reset();
     }
@@ -123,5 +129,13 @@ mod test {
         let mut hash = RistrettoHash::<Sha512>::default();
         hash.update("some data");
         hash.add("more data", 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_finalize_before_end_update_panics() {
+        let mut hash = RistrettoHash::<Sha512>::default();
+        hash.update("some data");
+        hash.finalize();
     }
 }
