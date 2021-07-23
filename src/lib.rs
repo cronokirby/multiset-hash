@@ -64,9 +64,14 @@ use digest::{
 /// hash.end_update(2);
 /// hash.add(b"cat", 2);
 /// ```
+///
+/// If you use `update`, you must call `end_update` before adding another object,
+/// or calling `finalize` to get the output of the hash function.
 #[derive(Clone, Default)]
 pub struct RistrettoHash<H> {
     hash: H,
+    // This flag will get set after we call update, and indicates that
+    // we need to finish that update with an explicit call to `end_update`.
     updating: bool,
     acc: RistrettoPoint,
 }
@@ -117,6 +122,14 @@ impl<H: Reset> Reset for RistrettoHash<H> {
 }
 
 impl<H: Update> Update for RistrettoHash<H> {
+    /// update hashes in part of an object.
+    ///
+    /// This method is used to hash an object in multiple different parts.
+    /// These updates must be finished by calling `end_update` to mark the end
+    /// of the object, and its multiplicity.
+    ///
+    /// Failing to call `end_update` before adding a new object with `add` or
+    /// finalizing the hash will panic.
     fn update(&mut self, data: impl AsRef<[u8]>) {
         self.updating = true;
         self.hash.update(data);
