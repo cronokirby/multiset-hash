@@ -77,6 +77,10 @@ pub struct RistrettoHash<H> {
 }
 
 impl<H: Digest<OutputSize = U64> + Default> RistrettoHash<H> {
+    /// This function adds a complete object to the hash.
+    ///
+    /// This function takes a multiplicity, which is equivalent to calling the function
+    /// multiple times, but is much more efficient.
     pub fn add(&mut self, data: impl AsRef<[u8]>, multiplicity: u64) {
         if self.updating {
             panic!("add called before end_update");
@@ -85,6 +89,13 @@ impl<H: Digest<OutputSize = U64> + Default> RistrettoHash<H> {
         self.end_update(multiplicity);
     }
 
+    /// This function should be called to mark the end of an object provided with `update`.
+    ///
+    /// This must always be called after calls to `update`, otherwise panics will happen
+    /// when finalizing or adding new objects.
+    ///
+    /// If called without any prior calls to `update`, this function is equivalent
+    /// to calling `add` with an empty slice.
     pub fn end_update(&mut self, multiplicity: u64) {
         self.updating = false;
 
